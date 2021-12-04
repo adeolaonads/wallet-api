@@ -35,6 +35,7 @@ router.get("/wallets", async (req, res) => {
 
 router.get("/wallets/:id", async (req, res) => {
   const _id = req.params.id;
+  
 
   try {
     const wallet = await Wallet.findById(_id);
@@ -50,6 +51,7 @@ router.get("/wallets/:id", async (req, res) => {
 
 router.patch("/wallets/:id", async (req, res) => {
   const updates = Object.keys(req.body);
+  console.log(updates);
   const allowUpdates = ["name", "email", "password", "amount"];
   const isValidOperation = updates.every((update) =>
     allowUpdates.includes(update)
@@ -75,18 +77,33 @@ router.patch("/wallets/:id", async (req, res) => {
 });
 
 
-//
+
 
 // To transfer funds
-router.post("/wallets/transfer/", async (req, res) => {
-  // const wallet = await Wallet.findByIdAndUpdate(req.params.id, req.body.amount, {
-    const email = req.query.email
-    const id = req.query.id
-    const amount = req.query.amount
-    res.send(req.query)
-    console.log(req.query)
- //  })
-});
+router.post("/wallets/transfer", async (req, res) => {
+  const {senderId, receiverId, transferAmount} = req.body;
+  senderConditions = {_id: senderId};
+  receiverConditions = {_id: receiverId};
 
+  let senderBalance = await Wallet.findById(senderConditions);
+  let receiverBalance = await Wallet.findById(receiverConditions);
 
-module.exports = router;
+  if(senderBalance !== undefined && receiverBalance !== undefined){
+    let receiverNewBalance = parseInt(receiverBalance.amount + transferAmount);
+    let senderNewBalance = parseInt(senderBalance.amount - transferAmount);
+    try {
+      const senderWallet = await Wallet.findByIdAndUpdate(senderId, {amount: senderNewBalance }, {
+        new: true,
+        runValidators: true,
+      });
+      const receiverWallet = await Wallet.findByIdAndUpdate(receiverId, {amount: receiverNewBalance }, {
+        new: true,
+        runValidators: true,
+      });
+      res.status(201).json({senderWallet, receiverWallet});
+    }catch (err) {
+      res.status(400).send(err);
+    }
+  } 
+})
+module.exports = router
