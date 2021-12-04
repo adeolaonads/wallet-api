@@ -14,6 +14,7 @@ router.post('/wallets/create', async (req, res) => {
     }
 })
 
+// Login
 router.post('/wallets/login', async (req, res) => {
     try {
         const wallet = await Wallet.findByCredentials(req.body.email, req.body.password)
@@ -24,6 +25,7 @@ router.post('/wallets/login', async (req, res) => {
     }
 })
 
+// To get details on all wallets in the collection
 router.get("/wallets", async (req, res) => {
   try {
     const wallets = await Wallet.find({});
@@ -33,6 +35,7 @@ router.get("/wallets", async (req, res) => {
   }
 });
 
+// TO get single wallet info
 router.get("/wallets/:id", async (req, res) => {
   const _id = req.params.id;
   
@@ -49,6 +52,7 @@ router.get("/wallets/:id", async (req, res) => {
   }
 });
 
+// To update wallet info
 router.patch("/wallets/:id", async (req, res) => {
   const updates = Object.keys(req.body);
   console.log(updates);
